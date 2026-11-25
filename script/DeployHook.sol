@@ -12,7 +12,7 @@ contract DeployHook is Script {
     address constant CREATE2_DEPLOYER = 0x4e59b44847b379578588920cA78FbF26c0B4956C;
 
     function run() external {
-        uint privateKey = vm.envUint("PRIVATE_KEY");
+        uint256 privateKey = vm.envUint("PRIVATE_KEY");
         address poolManager = vm.envAddress("POOL_MANAGER");
 
         // PointsHook only uses afterSwap, so only AFTER_SWAP_FLAG must be set
@@ -20,10 +20,7 @@ contract DeployHook is Script {
 
         // Mine a salt that makes the hook deploy to an address whose bottom 14 bits match flags
         (address hookAddress, bytes32 salt) = HookMiner.find(
-            CREATE2_DEPLOYER,
-            flags,
-            type(PointsHook).creationCode,
-            abi.encode(IPoolManager(poolManager))
+            CREATE2_DEPLOYER, flags, type(PointsHook).creationCode, abi.encode(IPoolManager(poolManager))
         );
 
         vm.startBroadcast(privateKey);

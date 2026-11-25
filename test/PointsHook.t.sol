@@ -21,12 +21,8 @@ contract PointsHookTest is Test {
         // Deploy at an address with the required afterSwap permission bit.
         uint160 flags = uint160(Hooks.AFTER_SWAP_FLAG);
 
-        (address hookAddress, bytes32 salt) = HookMiner.find(
-            address(this),
-            flags,
-            type(PointsHook).creationCode,
-            abi.encode(manager)
-        );
+        (address hookAddress, bytes32 salt) =
+            HookMiner.find(address(this), flags, type(PointsHook).creationCode, abi.encode(manager));
 
         hook = new PointsHook{salt: salt}(manager);
 
@@ -38,11 +34,7 @@ contract PointsHookTest is Test {
     function test_RewardVerifiedActivity() public {
         bytes32 activityId = keccak256("vaccination-001");
 
-        hook.rewardVerifiedActivity(
-            farmer,
-            activityId,
-            100
-        );
+        hook.rewardVerifiedActivity(farmer, activityId, 100);
 
         assertEq(hook.pendingRewards(farmer), 100);
         assertTrue(hook.processedActivities(activityId));
@@ -55,11 +47,7 @@ contract PointsHookTest is Test {
 
         vm.expectRevert("Unauthorized");
 
-        hook.rewardVerifiedActivity(
-            farmer,
-            keccak256("vaccination-002"),
-            100
-        );
+        hook.rewardVerifiedActivity(farmer, keccak256("vaccination-002"), 100);
     }
 
     // 3. Cannot reward the zero address.
@@ -67,11 +55,7 @@ contract PointsHookTest is Test {
     function test_RevertWhen_InvalidFarmer() public {
         vm.expectRevert("Invalid farmer");
 
-        hook.rewardVerifiedActivity(
-            address(0),
-            keccak256("vaccination-003"),
-            100
-        );
+        hook.rewardVerifiedActivity(address(0), keccak256("vaccination-003"), 100);
     }
 
     // 4. Cannot issue zero points.
@@ -79,11 +63,7 @@ contract PointsHookTest is Test {
     function test_RevertWhen_ZeroPoints() public {
         vm.expectRevert("Invalid points");
 
-        hook.rewardVerifiedActivity(
-            farmer,
-            keccak256("vaccination-004"),
-            0
-        );
+        hook.rewardVerifiedActivity(farmer, keccak256("vaccination-004"), 0);
     }
 
     // 5. Prevent duplicate agricultural activity rewards.
@@ -108,10 +88,7 @@ contract PointsHookTest is Test {
         vm.prank(farmer);
         hook.claimRewards();
 
-        assertEq(
-            hook.balanceOf(farmer, AGRI_POINTS_ID),
-            250
-        );
+        assertEq(hook.balanceOf(farmer, AGRI_POINTS_ID), 250);
 
         assertEq(hook.pendingRewards(farmer), 0);
     }
@@ -129,33 +106,18 @@ contract PointsHookTest is Test {
     // 8. Multiple activities accumulate before claiming.
 
     function test_MultipleActivitiesAccumulateRewards() public {
-        hook.rewardVerifiedActivity(
-            farmer,
-            keccak256("animal-registration-001"),
-            100
-        );
+        hook.rewardVerifiedActivity(farmer, keccak256("animal-registration-001"), 100);
 
-        hook.rewardVerifiedActivity(
-            farmer,
-            keccak256("health-check-001"),
-            200
-        );
+        hook.rewardVerifiedActivity(farmer, keccak256("health-check-001"), 200);
 
-        hook.rewardVerifiedActivity(
-            farmer,
-            keccak256("inventory-update-001"),
-            50
-        );
+        hook.rewardVerifiedActivity(farmer, keccak256("inventory-update-001"), 50);
 
         assertEq(hook.pendingRewards(farmer), 350);
 
         vm.prank(farmer);
         hook.claimRewards();
 
-        assertEq(
-            hook.balanceOf(farmer, AGRI_POINTS_ID),
-            350
-        );
+        assertEq(hook.balanceOf(farmer, AGRI_POINTS_ID), 350);
 
         assertEq(hook.pendingRewards(farmer), 0);
     }
