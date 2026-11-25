@@ -21,3 +21,5 @@ docs/
 .env
 .env.*
 !.env.example
+
+/lib/*

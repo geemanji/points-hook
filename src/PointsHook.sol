@@ -15,12 +15,14 @@ import {IPoolManager} from "v4-core/interfaces/IPoolManager.sol";
 import {Hooks} from "v4-core/libraries/Hooks.sol";
  
 contract  PointsHook is BaseHook, ERC1155 {
-    constructor(
-        IPoolManager _manager
-    ) BaseHook(_manager) {}
     mapping(bytes32 => bool) public processedActivities;
     mapping(address => uint256) public pendingRewards;
     address public verifier;
+    constructor(
+        IPoolManager _manager
+    ) BaseHook(_manager) {
+        verifier = msg.sender;
+    }
 	// Set up hook permissions to return `true`
 	// for the two hook functions we are using
     function getHookPermissions()
@@ -63,6 +65,17 @@ contract  PointsHook is BaseHook, ERC1155 {
         pendingRewards[farmer] += points;
     }
  
+    uint256 constant AGRI_POINTS_ID = 1;
+
+    // Allows a farmer to claim their accumulated pending rewards as ERC-1155 tokens.
+    function claimRewards() external {
+        uint256 rewards = pendingRewards[msg.sender];
+        require(rewards > 0, "No rewards available");
+
+        pendingRewards[msg.sender] = 0;
+        _mint(msg.sender, AGRI_POINTS_ID, rewards, "");
+    }
+
     // Implement the ERC1155 `uri` function
     function uri(uint256) public view virtual override returns (string memory) {
         return "https://api.example.com/token/{id}";
