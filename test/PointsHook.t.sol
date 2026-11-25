@@ -6,6 +6,7 @@ import {PointsHook} from "../src/PointsHook.sol";
 import {IPoolManager} from "v4-core/interfaces/IPoolManager.sol";
 import {Hooks} from "v4-core/libraries/Hooks.sol";
 import {HookMiner} from "v4-hooks-public/src/utils/HookMiner.sol";
+import {deployCodeTo} from "forge-std";
 
 contract PointsHookTest is Test {
     PointsHook public hook;
@@ -28,7 +29,7 @@ contract PointsHookTest is Test {
             abi.encode(manager)
         );
 
-        hook = new PointsHook{salt: salt}(manager);
+        hook = deployCodeTo(PointsHook{salt: salt}(manager));
 
         assertEq(address(hook), hookAddress);
     }
